@@ -20,6 +20,12 @@
 #pragma once
 
 #include "PropertyPageUI.h"
+#include "ConfigurationDownload.h"
+#include "Action.h"
+
+#include <vector>
+
+using namespace std;
 
 class WelcomePropertyPageUI: public PropertyPageUI
 {
@@ -29,15 +35,21 @@ public:
 
 		void SetSendStats(BOOL *pbSendStats) { m_pbSendStats = pbSendStats;}
 		void SetSystemRestore(BOOL *pbSystemRestore) { m_pbSystemRestore = pbSystemRestore;}
-		virtual NotificationResult _onNotify(LPNMHDR /*hdr*/, int /*iCtrlID*/);
+		void SetActions(vector <Action *> * value) { m_actions = value;}
+		virtual NotificationResult _onNotify(LPNMHDR /*hdr*/, int /*iCtrlID*/);		
 
 private:
 		virtual void _onInitDialog();
 		virtual	bool _onNext();
 		void _setTransparentBitmaps();
 		void _initPropertySheet();
+		Action* _getCatalanitzadorAction() const;		
+		void _updateCatalanitzadorAction(Action* action);
+		bool _doesUserWantToUpdate();
 
 		HFONT		m_hFont;
 		BOOL*		m_pbSendStats;
 		BOOL*		m_pbSystemRestore;
+		vector <Action *> * m_actions;
+		ConfigurationDownload m_configurationDownload;
 };

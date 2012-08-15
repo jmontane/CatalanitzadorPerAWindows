@@ -24,6 +24,8 @@
 #include "PropertySheetUI.h"
 #include "ExtraSecTermsDlgUI.h"
 #include "AboutBoxDlgUI.h"
+#include "ConfigurationInstance.h"
+#include "DownloadNewVersionDlgUI.h"
 
 WelcomePropertyPageUI::WelcomePropertyPageUI()
 {
@@ -58,11 +60,13 @@ void WelcomePropertyPageUI::_initPropertySheet()
 	SetFocus(getHandle());
 	SendMessage(hWnd, PSM_SETWIZBUTTONS, (WPARAM)0, (LPARAM)PSWIZB_NEXT);
 	Window::CenterWindow(hWnd);
+
+	m_configurationDownload.Start();
 }
 
 void WelcomePropertyPageUI::_onInitDialog()
 {
-	if (isAero() == false)
+	if (ConfigurationInstance::Get().GetAeroEnabled() == false)
 	{
 		HWND hWnd = GetDlgItem(getHandle(), IDC_WELCOME_TOAPP);
 		m_hFont = Window::CreateBoldFont(hWnd);
@@ -74,9 +78,84 @@ void WelcomePropertyPageUI::_onInitDialog()
 	_initPropertySheet();	
 }
 
+Action* WelcomePropertyPageUI::_getCatalanitzadorAction() const
+{
+	for (unsigned int i = 0; i < m_actions->size(); i++)
+	{
+		Action* action = m_actions->at(i);
+
+		if (action->GetID() == CatalanitzadorUpdate)
+		{
+			return action;
+		}
+	}
+	assert(false);
+	return NULL;
+}
+
+bool WelcomePropertyPageUI::_doesUserWantToUpdate()
+{
+	wchar_t szMessage [MAX_LOADSTRING];
+	wchar_t szCaption [MAX_LOADSTRING];		
+
+	LoadString(GetModuleHandle(NULL), IDS_WANT_TOUSE_NEWVERSION, szMessage, MAX_LOADSTRING);
+	LoadString(GetModuleHandle(NULL), IDS_MSGBOX_CAPTION, szCaption, MAX_LOADSTRING);
+
+	return MessageBox(getHandle(), szMessage, szCaption, MB_YESNO | MB_ICONQUESTION) == IDYES;
+}
+
+bool IsRunningInstanceUpToDate()
+{
+	vector <ConfigurationFileActionDownloads> m_fileActionsDownloads = ConfigurationInstance::Get().GetRemote().GetFileActionsDownloads();
+	for (unsigned int i = 0; i < m_fileActionsDownloads.size(); i++)
+	{
+		if (m_fileActionsDownloads.at(i).GetActionID() == CatalanitzadorUpdate)
+		{
+			ConfigurationFileActionDownload fileActionDownload;
+			fileActionDownload = m_fileActionsDownloads.at(i).GetFileActionDownloadCollection()[0];
+			return ConfigurationInstance::Get().GetVersion() >= fileActionDownload.GetMaxVersion();			
+		}
+	}
+	assert(false);
+	return true;	
+}
+
+void WelcomePropertyPageUI::_updateCatalanitzadorAction(Action* catalanitzadorAction)
+{
+	ActionStatus status = Selected;
+
+	if (IsRunningInstanceUpToDate() == false)
+	{
+		if (_doesUserWantToUpdate())
+		{
+			DownloadNewVersionDlgUI downloadNewVersionDlgUI(_getCatalanitzadorAction());
+			if (downloadNewVersionDlgUI.Run(getHandle()) == IDCANCEL)
+			{
+				status = NotSelected;
+			}
+		}		
+		else
+		{
+			status = NotSelected;
+		}
+	}
+	else
+	{
+		status = AlreadyApplied;
+	}
+	
+	catalanitzadorAction->SetStatus(status);
+}
 bool WelcomePropertyPageUI::_onNext()
 {
-	*m_pbSendStats = IsDlgButtonChecked(getHandle(),IDC_SENDRESULTS)==BST_CHECKED;	
+	Action* catalanitzadorAction = _getCatalanitzadorAction();
+
+	if (catalanitzadorAction->GetStatus() != Successful)
+	{
+		_updateCatalanitzadorAction(catalanitzadorAction);
+	}
+	
+	*m_pbSendStats = IsDlgButtonChecked(getHandle(),IDC_SENDRESULTS)==BST_CHECKED;
 	return true;
 }
 

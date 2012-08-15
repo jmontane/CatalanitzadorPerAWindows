@@ -20,6 +20,7 @@
 #include "stdafx.h"
 #include "Action.h"
 #include "Resources.h"
+#include "ConfigurationInstance.h"
 
 #include <fstream>
 #include <iostream>
@@ -27,7 +28,14 @@
 Action::Action()
 {
 	status = NotSelected;
-	szCannotBeApplied[0] = NULL;	
+	szCannotBeApplied[0] = NULL;
+}
+
+Action::Action(DownloadManager* downloadManager)
+{
+	m_downloadManager = downloadManager;
+	status = NotSelected;
+	szCannotBeApplied[0] = NULL;
 }
 
 void Action::GetLicense(wstring &license)
@@ -84,6 +92,13 @@ void Action::_setStatusNotInstalled()
 	SetStatus(NotInstalled);
 }
 
+bool Action::_doesDownloadExist()
+{
+	ConfigurationFileActionDownload downloadVersion;
+	downloadVersion = ConfigurationInstance::Get().GetRemote().GetDownloadForActionID(GetID(), ApplicationVersion(GetVersion()));
+	return downloadVersion.IsEmpty() == false;	
+}
+
 void Action::SetStatus(ActionStatus value) 
 {
 	ActionStatus prev = status;
@@ -97,7 +112,7 @@ void Action::SetStatus(ActionStatus value)
 	switch (prev)
 	{
 		case NotSelected:
-			assert(status == CannotBeApplied || status == Selected || status == AlreadyApplied || status == NotInstalled);
+			assert(status == CannotBeApplied || status == Selected || status == AlreadyApplied || status == NotInstalled || status == Successful);
 			break;
 		case Selected:
 			assert(status == InProgress || status == NotSelected);

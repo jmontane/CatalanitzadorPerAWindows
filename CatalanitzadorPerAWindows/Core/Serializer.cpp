@@ -21,8 +21,6 @@
 #include "Serializer.h"
 #include "OSVersion.h"
 #include "Version.h"
-#include "Guid.h"
-#include "Registry.h"
 
 #include <fstream>
 
@@ -34,19 +32,6 @@ Serializer::Serializer()
 Serializer::~Serializer()
 {
 	Close();
-}
-
-void Serializer::_setSession()
-{
-	char szText [1024];
-	Registry registry;
-	Guid guid(&registry);
-	string guid_value;
-
-	StringConversion::ToMultiByte(guid.Get().c_str(), guid_value);
-	sprintf_s (szText, "\t<session guid='%s' />\n", guid_value.c_str());
-	*m_stream << szText;
-	guid.Store();
 }
 
 void Serializer::_application()
@@ -76,7 +61,6 @@ void Serializer::OpenHeader()
 	*m_stream << "<execution>\n";
 
 	_application();
-	_setSession();
 	version.Serialize(m_stream);
 }
 

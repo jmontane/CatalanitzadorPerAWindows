@@ -24,19 +24,10 @@
 UploadStatistics::UploadStatistics(Serializer* serializer)
 {
 	m_serializer = serializer;
-	m_hThread = NULL;
 }
 
-UploadStatistics::~UploadStatistics()
-{
-	if (m_hThread != NULL)
-	{
-		CloseHandle(m_hThread);
-		m_hThread = NULL;
-	}
-}
 
-void UploadStatistics::_uploadFile()
+void UploadStatistics::OnStart()
 {
 	string serialize;
 	char szVar[65535];
@@ -50,24 +41,5 @@ void UploadStatistics::_uploadFile()
 	HttpFormInet access;	
 	bool rslt = access.PostForm(UPLOAD_URL, szVar);
 	g_log.Log(L"UploadStatistics::UploadFile to %s, result %u", (wchar_t*) UPLOAD_URL, (wchar_t *)rslt);	
-}
-
-DWORD UploadStatistics::_uploadXmlThread(LPVOID lpParam)
-{
-	UploadStatistics* stats = (UploadStatistics *) lpParam;
-	stats->_uploadFile();
-	return 0;
-}
-
-void UploadStatistics::StartUploadThread()
-{
-	m_hThread = CreateThread(NULL, 0, _uploadXmlThread, this, 0, NULL);
-}
-
-void UploadStatistics::WaitBeforeExit()
-{
-	// In case the user exists the app very quickly, give time the upload to complete
-	if (m_hThread != NULL)
-		WaitForSingleObject(m_hThread, 10000);
 }
 

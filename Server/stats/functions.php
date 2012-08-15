@@ -139,10 +139,23 @@ function get_actions_data($action_id) {
 }
 
 function print_char($action_id,$small,$nice) {
-	?>
-		<?=$small?>Char = new Highcharts.Chart({
+	
+	$idAllStats = $small.'_versions';
+	$idInstalledOnly = $idAllStats.'_installedonly';
+	
+	
+	echo "jQuery('#$idAllStats').after('<div id=\"$idInstalledOnly\"",
+	 ' style="height: 300px; margin: 0"></div>',"');";
+	
+	print_javascript_chart($idAllStats,$nice,$action_id,true);
+	print_javascript_chart($idInstalledOnly,$nice,$action_id,false);
+}
+
+function print_javascript_chart($id,$nice,$action_id,$allStats) {
+		?>
+		<?=$id?>Chart = new Highcharts.Chart({
 				chart: {
-						renderTo: '<?=$small?>_versions',
+						renderTo: '<?=$id?>',
 						plotBackgroundColor: null,
 						plotBorderWidth: null,
 						plotShadow: false
@@ -165,11 +178,16 @@ function print_char($action_id,$small,$nice) {
 										enabled: true,
 										color: '#000000',
 										connectorColor: '#000000'
+								},
+								events : { 
+									click: function(event) { 
+										change_plots('<?=str_replace('_installedonly','',$id)?>');
+										} 
 								}
 						}
 				},
 				series: [{ type: 'pie', name: "Versions de<?=$nice?>", data: [<?php 
-					print_action_data(get_action_stats($action_id));
+					print_action_data(get_action_stats($action_id),$allStats);
 				?>]}]
 		});	
 	<?php
@@ -225,7 +243,8 @@ function get_action_stats($action_id) {
 	$v = get_version_filter();
 
 	if(in_array($action_id,$subversions)) {
-		$tversion = "SUBSTRING(Version,1,LOCATE('.',Version,LOCATE('.',Version)+1)-1)";
+		//$tversion = "SUBSTRING(Version,1,LOCATE('.',Version,LOCATE('.',Version)+1)-1)";
+		$tversion = "IF(LOCATE('.',Version,LOCATE('.',Version)+1)=0,Version,SUBSTRING(Version,1,LOCATE('.',Version,LOCATE('.',Version)+1)-1))";
 	} else {
 		$tversion = "Version";
 	}
@@ -247,13 +266,45 @@ function get_action_stats($action_id) {
 
 
 
-function print_action_data($action_count) {
+function print_action_data($action_count,$notinstalled=true) {
 	$i = 0;
 	foreach ( $action_count as $n=>$action ) {
 		if($i!=0) echo ','; 
+		if($n=='') {
+			if(!$notinstalled) continue;
+			$n = 'Sense programa';
+		}
 		$i++;
-		if($n=='') $n = 'Sense programa';
 		echo '["',$n,'", ',$action,']';
 	}
+}
+
+/*********** inspectors *************/
+function get_inspectors_data($id) {
+	
+	if(!is_int($id)) return array();
+	global $db;
+	$_data = array();
+	$sql = "select count(SessionID) as Total, InspectorID, KeyVersion, Value from inspectors where InspectorId = $id group by InspectorID, KeyVersion, Value;";
+	$results = $db->get_results($sql);
+	
+	$lastKey = '';
+		
+	foreach($results as $result) {
+		
+			$key = $result->KeyVersion;
+		
+			if($key != $lastKey) {
+				$_data[$key] = array();
+				$_data[$key]['total'] = 0;
+				$_data[$key]['data'] = array();
+			}
+			
+			$_data[$key]['total'] += $result->Total;
+			$_data[$key]['data'][$result->Value] = $result->Total;
+			
+			$lastKey = $key;
+	}
+	return $_data;
 }
 ?>

@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)Actions;$(ProjectDir)Core;$(ProjectDir)UI\Sheets;$(ProjectDir)Core;$(ProjectDir)UI\;$(ProjectDir)Core;$(ProjectDir)UI\Dialogs;$(ProjectDir)Core;$(ProjectDir)UI\Controls;$(ProjectDir)Resources;$(ProjectDir)Application;$(ProjectDir)Inspectors;$(ProjectDir);OS"
+				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)Actions;$(ProjectDir)Core;$(ProjectDir)UI\Sheets;$(ProjectDir)Core;$(ProjectDir)UI\;$(ProjectDir)Core;$(ProjectDir)UI\Dialogs;$(ProjectDir)Core;$(ProjectDir)Core\Configuration;$(ProjectDir)UI\Controls;$(ProjectDir)Resources;$(ProjectDir)Application;$(ProjectDir)Inspectors;$(ProjectDir);OS"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -120,7 +120,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)Actions;$(ProjectDir)Core;$(ProjectDir)UI\Sheets;$(ProjectDir)Core;$(ProjectDir)UI\;$(ProjectDir)Core;$(ProjectDir)UI\Dialogs;$(ProjectDir)Core;$(ProjectDir)UI\Controls;$(ProjectDir)Resources;$(ProjectDir)Application;$(ProjectDir)Inspectors;$(ProjectDir);OS"
+				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)Actions;$(ProjectDir)Core;$(ProjectDir)UI\Sheets;$(ProjectDir)Core;$(ProjectDir)UI\;$(ProjectDir)Core;$(ProjectDir)UI\Dialogs;$(ProjectDir)Core;$(ProjectDir)Core\Configuration;$(ProjectDir)UI\Controls;$(ProjectDir)Resources;$(ProjectDir)Application;$(ProjectDir)Inspectors;$(ProjectDir);OS"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -261,6 +261,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Actions\CatalanitzadorUpdateAction.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Actions\CatalanitzadorUpdateAction.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Actions\ChromeAction.cpp"
 				>
 			</File>
@@ -393,7 +401,23 @@
 			Name="Core"
 			>
 			<File
+				RelativePath=".\Core\ApplicationVersion.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Core\ApplicationVersion.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Core\Defines.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Core\DownloadManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Core\DownloadManager.h"
 				>
 			</File>
 			<File
@@ -472,6 +496,58 @@
 				RelativePath=".\Core\Url.h"
 				>
 			</File>
+			<Filter
+				Name="Configuration"
+				>
+				<File
+					RelativePath=".\Core\Configuration\Configuration.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationDownload.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationDownload.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationFileActionDownload.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationFileActionDownloads.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationFileActionDownloads.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationInstance.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationRemote.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationRemoteEmbedded.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationRemoteEmbedded.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationRemoteXmlParser.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationRemoteXmlParser.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="UI"
@@ -525,6 +601,14 @@
 				</File>
 				<File
 					RelativePath=".\UI\Dialogs\DownloadErrorDlgUI.h"
+					>
+				</File>
+				<File
+					RelativePath=".\UI\Dialogs\DownloadNewVersionDlgUI.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\UI\Dialogs\DownloadNewVersionDlgUI.h"
 					>
 				</File>
 				<File
@@ -709,11 +793,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Inspectors\PDFCreatorInspector.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Inspectors\PDFCreatorInspector.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Inspectors\SkypeInspector.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\Inspectors\SkypeInspector.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Inspectors\WinRARInspector.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Inspectors\WinRARInspector.h"
 				>
 			</File>
 		</Filter>
@@ -742,6 +842,10 @@
 			</File>
 			<File
 				RelativePath=".\OS\FileVersionInfo.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OS\IFileVersionInfo.h"
 				>
 			</File>
 			<File
@@ -814,6 +918,14 @@
 			</File>
 			<File
 				RelativePath=".\OS\SystemRestore.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OS\Thread.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\OS\Thread.h"
 				>
 			</File>
 			<File

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "IRegistry.h"
+#include "Serializable.h"
 #include <string>
 
 using namespace std;
@@ -27,18 +28,18 @@ using namespace std;
 #define CATALANITZADOR_REGKEY L"SOFTWARE\\Catalanitzador"
 #define GUID_REGKEY L"GUID"
 
-class _APICALL Guid
+class _APICALL Guid : public Serializable
 {
 	public:
 			Guid(IRegistry* registry);
 			wstring Get();
 			void Store();
+			virtual void Serialize(ostream* stream);
 
 	private:
 
 			void _generate();
 			bool _read();
-			void _store();
 			
 			IRegistry* m_registry;
 			bool m_bReaded;

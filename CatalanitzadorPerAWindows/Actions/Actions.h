@@ -24,6 +24,8 @@
 #include "IWin32I18N.h"
 #include "IRegistry.h"
 #include "IRunner.h"
+#include "IFileVersionInfo.h"
+#include "DownloadManager.h"
 
 #include <vector>
 
@@ -32,9 +34,11 @@ using namespace std;
 class Actions
 {
     public:
-		Actions();
+		Actions(DownloadManager* downloadManager);
 		~Actions();
 		vector <Action *> GetActions() {return m_actions; }
+		Action* GetActionFromID(ActionID actionID);
+
 	private:
 		void _buildListOfActions();
 		void _checkPrerequirements();
@@ -43,7 +47,9 @@ class Actions
 		IRegistry* _getNewRegistry();
 		IRunner* _getNewRunner();
 		IWin32I18N* _getNewWin32I18N();
+		IFileVersionInfo* _getFileVersionInfo();
 
 		vector <Action *> m_actions;
 		vector <void *> m_objectsToDelete;
+		DownloadManager* m_pDownloadManager;
 };

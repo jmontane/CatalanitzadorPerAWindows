@@ -33,7 +33,7 @@ public:
 		virtual wchar_t* GetName();
 		virtual wchar_t* GetDescription();
 		virtual ActionID GetID() const { return AcrobatReader;};
-		virtual ActionGroup GetGroup() {return ActionGroupOfficeAutomation;}
+		virtual ActionGroup GetGroup() const {return ActionGroupOfficeAutomation;}
 		virtual bool Download(ProgressStatus progress, void *data);
 		virtual bool IsNeed();
 		virtual void Execute();
@@ -41,7 +41,8 @@ public:
 		virtual const wchar_t* GetVersion() {return m_version.c_str();}
 		virtual void CheckPrerequirements(Action * action);
 		virtual bool IsExecuting();
-		virtual void FinishExecution();		
+		virtual void FinishExecution();
+		bool IsIERunning();
 
 protected:
 
@@ -74,10 +75,8 @@ private:
 		IRunner* m_runner;
 		IRegistry* m_registry;
 		HideApplicationWindow m_hideApplicationWindow;
-
-		wchar_t m_szFullFilename[MAX_PATH];
+		
 		wchar_t m_szFilename[MAX_PATH];
 		wchar_t m_szTempPath[MAX_PATH];
-		
 };
 

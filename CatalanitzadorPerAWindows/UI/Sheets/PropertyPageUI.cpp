@@ -21,18 +21,12 @@
 #include "PropertyPageUI.h"
 #include "PropertySheetUI.h"
 #include "OSVersion.h"
+#include "ConfigurationInstance.h"
 
 PropertyPageUI::PropertyPageUI()
 {
 	m_pfnDlgProc = s_pageWndProc;
 	m_PageButtons = DefaultButtons;
-
-	OSVersion osversion;
-	m_bIsAero = osversion.GetVersion() != WindowsXP;
-
-#ifdef FORCE_NON_AERO
-	m_bIsAero = false;
-#endif
 }
 
 PropertyPageUI::~PropertyPageUI()
@@ -154,7 +148,7 @@ int CALLBACK PropertyPageUI::s_pageWndProc(HWND hWnd, UINT msg, WPARAM wParam, L
 
 void PropertyPageUI::createPage(HINSTANCE hInstance, WORD wRscID, WORD wRscIDAero, LPWSTR pTitle)
 {	
-	LPCTSTR lpTemplate = isAero() ? MAKEINTRESOURCE(wRscIDAero) : MAKEINTRESOURCE(wRscID);
+	LPCTSTR lpTemplate = ConfigurationInstance::Get().GetAeroEnabled() ? MAKEINTRESOURCE(wRscIDAero) : MAKEINTRESOURCE(wRscID);
 		
 	m_page.dwSize = sizeof(PROPSHEETPAGE);
 	m_page.dwFlags = PSP_DEFAULT;

@@ -25,6 +25,7 @@
 #include "ActionGroup.h"
 #include "ActionDownload.h"
 #include "StringConversion.h"
+#include "DownloadManager.h"
 
 #include <vector>
 using namespace std;
@@ -36,6 +37,7 @@ class _APICALL Action : public Serializable
 {
 public:
 		Action();
+		Action(DownloadManager* downloadManager);
 		virtual ~Action(){};
 
 		// Get the name of action
@@ -48,7 +50,7 @@ public:
 		virtual ActionID GetID() const = 0;
 
 		// How we visually will group this action
-		virtual ActionGroup GetGroup() {return ActionGroupNone;}
+		virtual ActionGroup GetGroup() const {return ActionGroupNone;}
 
 		// If the action needs to download files to be completed (like language packages) or can run without
 		// downloading files (changes in configuration). This is used to determine if Internet Connection is
@@ -112,11 +114,13 @@ protected:
 		void _setStatusNotInstalled();
 		bool _getFile(DownloadID downloadID, wstring file, ProgressStatus progress, void *data);
 		wchar_t* _getStringFromResourceIDName(int nID, wchar_t* string);
+		bool _doesDownloadExist();
 
 		TCHAR szName[MAX_LOADSTRING];
 		TCHAR szDescription[MAX_LOADSTRING];
 		TCHAR szCannotBeApplied[MAX_LOADSTRING];
 		ActionStatus status;
 		ActionDownload m_actionDownload;
+		DownloadManager* m_downloadManager;
 };
 

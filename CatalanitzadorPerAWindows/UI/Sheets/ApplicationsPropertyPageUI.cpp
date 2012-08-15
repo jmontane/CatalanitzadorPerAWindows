@@ -21,13 +21,13 @@
 #include "ApplicationsPropertyPageUI.h"
 #include "ShowLicensesDlgUI.h"
 #include "AppRunningDlgUI.h"
+#include "AdobeReaderAction.h"
 
-#define PIXELS_TO_INDENT_ACTIONS 10
+#define DEFAULT_SELECTEDITEM_INLISTVIEW 1
 
 ApplicationsPropertyPageUI::ApplicationsPropertyPageUI()
 {
-	m_hFont = NULL;
-	m_hImageList = NULL;
+	m_hFont = NULL;	
 }
 
 ApplicationsPropertyPageUI::~ApplicationsPropertyPageUI()
@@ -61,37 +61,21 @@ void ApplicationsPropertyPageUI::_processDependantItem(Action* action)
 
 	if (prevStatus == dependant->GetStatus())
 		return;
-	
-	int items = ListView_GetItemCount(m_hList);
 
-	for (int i = 0; i < items; ++i)
-	{		
-		LVITEM item;
-		memset(&item,0,sizeof(item));
-		item.iItem = i;
-		item.mask = LVIF_PARAM;
-
-		ListView_GetItem(m_hList, &item);
-		Action* itemAction = (Action *) item.lParam;		
+	for (int i = 0; i < m_listview.Count(); i++)
+	{
+		Action* itemAction = (Action *) m_listview.GetItemData(i);
 		if (itemAction == dependant)
 		{
-			item.mask = LVIF_IMAGE;
-			item.iImage = CheckedListView::GetImageIndex(itemAction->GetStatus());
-			ListView_SetItem(m_hList, &item);
+			m_listview.SetItemImage(i, itemAction->GetStatus());
 			break;
-		}		
-	}	
+		}
+	}
 }
 
-void ApplicationsPropertyPageUI::_processClickOnItem(int nItem)
-{	
-	LVITEM item;
-	memset(&item,0,sizeof(item));
-	item.iItem = nItem;
-	item.mask = LVIF_IMAGE | LVIF_PARAM;
-	ListView_GetItem(m_hList, &item);
-
-	Action* action = (Action *) item.lParam;
+void ApplicationsPropertyPageUI::ProcessClickOnItem(int nItem)
+{
+	Action* action = (Action *) m_listview.GetItemData(nItem);
 
 	if (action == NULL)
 		return;
@@ -111,48 +95,10 @@ void ApplicationsPropertyPageUI::_processClickOnItem(int nItem)
 
 	wstring name;
 	_getActionDisplayName(action, name);
-
-	item.mask = LVIF_IMAGE | LVIF_TEXT;
-	item.iImage = CheckedListView::GetImageIndex(action->GetStatus());
-	item.pszText = (LPWSTR) name.c_str();
+	m_listview.SetItemImage(nItem, action->GetStatus());
+	m_listview.SetItemText(nItem, name);
 	
-	ListView_SetItem(m_hList, &item);
 	_enableOrDisableLicenseControls();
-}
-
-LRESULT ApplicationsPropertyPageUI::_listViewSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{	
-	ApplicationsPropertyPageUI *pThis = (ApplicationsPropertyPageUI *)GetWindowLong(hWnd,GWL_USERDATA);
-
-	switch (uMsg)
-	{
-		case WM_LBUTTONDBLCLK:
-		case WM_LBUTTONDOWN:
-		{
-			LVHITTESTINFO lvHitTestInfo;
-			lvHitTestInfo.pt.x = LOWORD(lParam) - PIXELS_TO_INDENT_ACTIONS;
-			lvHitTestInfo.pt.y = HIWORD(lParam);
-			ListView_HitTest(hWnd, &lvHitTestInfo);
-
-			if (lvHitTestInfo.flags & LVHT_ONITEMICON)
-			{
-				pThis->_processClickOnItem(lvHitTestInfo.iItem);
-			}
-			break;
-		}
-		
-		case WM_KEYDOWN:
-		{
-			if (wParam == VK_SPACE)
-			{
-				pThis->_processClickOnItem(ListView_GetSelectionMark(hWnd));
-			}
-			break;
-		}
-		default:
-			break;
-	}
-	return CallWindowProc(pThis->PreviousProc, hWnd, uMsg, wParam, lParam);
 }
 
 void ApplicationsPropertyPageUI::_setBoldControls()
@@ -173,181 +119,131 @@ void ApplicationsPropertyPageUI::_setLegendControl()
 {
 	ActionStatus statuses [] = {Selected, AlreadyApplied, CannotBeApplied};
 	int resources [] = {IDS_LEGEND_SELECTED, IDS_LEGEND_ALREADYAPPLIED, IDS_LEGEND_CANNOT};
-	HWND hList;
 
-	hList = GetDlgItem(getHandle(), IDC_APPLICATIONSLEGEND);
-	LVITEM item;
-	memset(&item,0,sizeof(item));
-	item.mask = LVIF_TEXT | LVIF_IMAGE;
-
+	m_listviewLegend.InitControl(GetDlgItem(getHandle(), IDC_APPLICATIONSLEGEND));
+	
 	for (int l = 0; l <sizeof(statuses) / sizeof(statuses[0]); l++)
 	{
 		wchar_t szString [MAX_LOADSTRING];
-
-		HINSTANCE hInstance = GetModuleHandle(NULL);
-		LoadString(hInstance, resources[l], szString, MAX_LOADSTRING);
-
-		item.iItem= l;
-		item.pszText= szString;
-		item.iImage = CheckedListView::GetImageIndex(statuses[l]);
-		ListView_InsertItem(hList, &item);		
+		
+		LoadString(GetModuleHandle(NULL), resources[l], szString, MAX_LOADSTRING);
+		m_listviewLegend.InsertItem(szString, NULL, statuses[l]);
 	}
-	
-	ListView_SetImageList(hList, m_hImageList, LVSIL_SMALL);	
 }
 
-void ApplicationsPropertyPageUI::_insertActioninListView(Action *action, int &itemID)
+void ApplicationsPropertyPageUI::_insertActioninListView(Action *action)
 {
 	wstring name;
-	LVITEM item;
-	memset(&item,0,sizeof(item));
-	item.mask=LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE;
-
 	_getActionDisplayName(action, name);
-	item.iItem = itemID;
-	item.pszText = (LPWSTR) name.c_str();
-	item.lParam = (LPARAM) action;
-	item.iImage = CheckedListView::GetImageIndex(action->GetStatus());
-	ListView_InsertItem(m_hList, &item);
-	itemID++;
+
+	m_listview.InsertItem(name, (LPARAM) action, action->GetStatus());
 }
 
 // An index to ActionGroup
 static const int groupNames [] = {IDS_GROUPNAME_NONE, IDS_GROUPNAME_WINDOWS, IDS_GROUPNAME_INTERNET, IDS_GROUPNAME_OFFICE};
 
-void ApplicationsPropertyPageUI::_insertGroupNameListView(ActionGroup group, int &itemID)
+void ApplicationsPropertyPageUI::_insertGroupNameListView(ActionGroup group)
 {
 	wchar_t szString[MAX_LOADSTRING];
-	LVITEM item;
-	memset(&item,0,sizeof(item));
-	item.mask=LVIF_TEXT;
 
-	
 	LoadString(GetModuleHandle(NULL), groupNames[(int)group], szString, MAX_LOADSTRING);
-	item.iItem = itemID;
-	item.pszText = szString;
-	ListView_InsertItem(m_hList, &item);
-	itemID++;
+	m_listview.InsertItem(szString);	
+}
+
+void ApplicationsPropertyPageUI::_onClickItemEvent(int nItem, void* data)
+{
+	ApplicationsPropertyPageUI* pThis = (ApplicationsPropertyPageUI*) data;
+	return pThis->ProcessClickOnItem(nItem);
 }
 
 void ApplicationsPropertyPageUI::_onInitDialog()
 {
-	int nItemId = 0;
-	map <Action *, bool>::iterator mapped_item;
-	m_hList = GetDlgItem(getHandle(), IDC_APPLICATIONSLIST);
+	HWND hListWnd;
+	map <Action *, bool>::iterator mapped_item;	
 
 	if (m_availableActions->size() == 0)
 		return;
 
-	_setBoldControls();
-
-	m_hImageList = m_listview.CreateCheckBoxImageList(m_hList);
-	
-	ListView_SetImageList(m_hList, m_hImageList, LVSIL_SMALL);
-	
-	for (int g = 0 ;g < ActionGroupLast; g++)
+	hListWnd = GetDlgItem(getHandle(), IDC_APPLICATIONSLIST);
+	m_listview.InitControl(hListWnd);
+	m_listview.SetClickItem(_onClickItemEvent, this);	
+		
+	for (int g = 0; g < ActionGroupLast; g++)
 	{
-		bool bFirstHit = false;		
+		bool bFirstHit = false;
 
 		for (unsigned int i = 0; i < m_availableActions->size (); i++)
 		{		
 			Action* action = m_availableActions->at(i);
 
-			if (action->GetGroup() != (ActionGroup)g)
+			if (action->GetGroup() == ActionGroupNone || action->GetGroup() != (ActionGroup)g)
 				continue;
 
 			bool needed = action->IsNeed();
 
 			if (bFirstHit == false)
 			{
-				_insertGroupNameListView((ActionGroup)g, nItemId);
+				_insertGroupNameListView((ActionGroup)g);
 				bFirstHit = true;
 			}
 
 			m_disabledActions.insert(ActionBool_Pair(action, needed));
 
 			if (needed)
-				action->SetStatus(Selected);			
+				action->SetStatus(Selected);
 			
-			_insertActioninListView(action, nItemId);
+			_insertActioninListView(action);
 			_processDependantItem(action);
 		}
-	}	
+	}
 
-	ListView_SetItemState(m_hList, 1, LVIS_FOCUSED | LVIS_SELECTED, 0x000F);
-	SetWindowLongPtr(m_hList, GWL_USERDATA, (LONG) this);
-	PreviousProc = (WNDPROC)SetWindowLongPtr(m_hList, GWLP_WNDPROC, (LONG_PTR) _listViewSubclassProc);
-		
+	m_listview.SelectItem(DEFAULT_SELECTEDITEM_INLISTVIEW);
+	_setBoldControls();
 	_setLegendControl();
 	_enableOrDisableLicenseControls();
 }
 
-
 NotificationResult ApplicationsPropertyPageUI::_onNotify(LPNMHDR hdr, int iCtrlID)
 {
 	if(hdr->idFrom != IDC_APPLICATIONSLIST)
-		return ReturnFalse;
-
+		return ReturnFalse;	
 	if (hdr->code == NM_CUSTOMDRAW)
 	{
 		LPNMLVCUSTOMDRAW lpNMLVCD = (LPNMLVCUSTOMDRAW)hdr;
 
-		// TODO: Switch
-		if (lpNMLVCD->nmcd.dwDrawStage == CDDS_PREPAINT)
-		{			
-			SetWindowLong(getHandle(), DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW);
-			return ReturnTrue;
-		}
-
-		if (lpNMLVCD->nmcd.dwDrawStage == CDDS_ITEMPREPAINT)
+		switch (lpNMLVCD->nmcd.dwDrawStage)
 		{
-			Action* action = (Action *)  lpNMLVCD->nmcd.lItemlParam;
+			case CDDS_PREPAINT:	
+				SetWindowLong(getHandle(), DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW);
+				return ReturnTrue;
 
-			if (action != NULL)
+			case CDDS_ITEMPREPAINT:
 			{
-				map <Action *, bool>::iterator item;
+				Action* action = (Action *)  lpNMLVCD->nmcd.lItemlParam;
+				bool disabled = false;
 
-				item = m_disabledActions.find((Action * const &)action);
-
-				if (item->second == false)
+				if (action != NULL)
 				{
-					DWORD color = GetSysColor(COLOR_GRAYTEXT);
-					lpNMLVCD->clrText = color;
+					map <Action *, bool>::iterator item;
+					item = m_disabledActions.find((Action * const &)action);
+
+					if (item->second == false)		
+						disabled = true;			
 				}
+
+				m_listview.PreItemPaint(lpNMLVCD, disabled);
+				SetWindowLong(getHandle(), DWLP_MSGRESULT, CDRF_NOTIFYPOSTPAINT);
+				return ReturnTrue;
 			}
 
-			RECT rect;
-			ListView_GetItemRect(lpNMLVCD->nmcd.hdr.hwndFrom, lpNMLVCD->nmcd.dwItemSpec, &rect, LVIR_SELECTBOUNDS);
-			FillRect(lpNMLVCD->nmcd.hdc, &rect, GetSysColorBrush(COLOR_WINDOW));
-
-			SetWindowLong(getHandle(), DWLP_MSGRESULT, CDRF_NOTIFYPOSTPAINT);
-			return ReturnTrue;
+			case CDDS_ITEMPOSTPAINT:		
+				m_listview.PostItemPaint(lpNMLVCD, lpNMLVCD->nmcd.lItemlParam == NULL);
+				return ReturnTrue;
+			default:
+				return CallDefProc;
 		}
-
-		if (lpNMLVCD->nmcd.dwDrawStage == CDDS_ITEMPOSTPAINT)
-		{
-			RECT rect;
-			Action* action = (Action *)  lpNMLVCD->nmcd.lItemlParam;
-			
-			if (action != NULL)
-			{
-				ListView_GetItemRect(lpNMLVCD->nmcd.hdr.hwndFrom, lpNMLVCD->nmcd.dwItemSpec, &rect, LVIR_SELECTBOUNDS);
-				ScrollDC(lpNMLVCD->nmcd.hdc, PIXELS_TO_INDENT_ACTIONS, 0, &rect, NULL, NULL, NULL);
-
-				rect.right = rect.left + PIXELS_TO_INDENT_ACTIONS;
-				FillRect(lpNMLVCD->nmcd.hdc, &rect, GetSysColorBrush(COLOR_WINDOW));
-			}
-			else
-			{
-				int icon_size = GetSystemMetrics(SM_CXSMICON);
-				ListView_GetItemRect(lpNMLVCD->nmcd.hdr.hwndFrom, lpNMLVCD->nmcd.dwItemSpec, &rect, LVIR_SELECTBOUNDS);
-				ScrollDC(lpNMLVCD->nmcd.hdc, -icon_size, 0, &rect, NULL, NULL, NULL);	
-			}
-			return ReturnTrue;
-		}
-		return CallDefProc;
 	}
-	   
+
 	NMLISTVIEW *pListView = (NMLISTVIEW *)hdr;
 	if (pListView->hdr.code != LVN_ITEMCHANGED)
 		return ReturnFalse;
@@ -355,7 +251,6 @@ NotificationResult ApplicationsPropertyPageUI::_onNotify(LPNMHDR hdr, int iCtrlI
 	_updateActionDescriptionAndReq((Action *)  pListView->lParam);
 	return ReturnTrue;
 }
-
 
 void ApplicationsPropertyPageUI::_updateActionDescriptionAndReq(Action* action)
 {
@@ -432,47 +327,45 @@ void ApplicationsPropertyPageUI::_onCommand(HWND hWnd, WPARAM wParam, LPARAM lPa
 	}
 }
 
-bool ApplicationsPropertyPageUI::_onNext()
+bool ApplicationsPropertyPageUI::_anyActionNeedsInternetConnection()
 {
-	int items = ListView_GetItemCount(m_hList);
 	bool needInet = false;
 
+	for (int i = 0; i < m_listview.Count(); ++i)
+	{				
+		Action* action = (Action *) m_listview.GetItemData(i);
+
+		if (action == NULL)
+			continue;
+		
+		bool bSelected;
+
+		bSelected = action->GetStatus() == Selected;
+		g_log.Log(L"ApplicationsPropertyPageUI::_onNext. Action '%s', selected %u", action->GetName(), (wchar_t *)bSelected);
+
+		if (bSelected && action->IsDownloadNeed())		
+			needInet = true;
+	}
+	return needInet;
+}
+
+bool ApplicationsPropertyPageUI::_onNext()
+{
 	if (_licenseAccepted() == false)
-		return FALSE;
+		return false;
 
 	if (_checkRunningApps() == true)
-		return FALSE;
+		return false;
 
-	for (int i = 0; i < items; ++i)
+	if (_anyActionNeedsInternetConnection() && Inet::IsThereConnection() == false)
 	{
-		bool bSelected;
-		LVITEM item;
-		memset(&item,0,sizeof(item));
-		item.iItem = i;
-		item.mask = LVIF_PARAM;
-
-		ListView_GetItem(m_hList, &item);
-		Action* action = (Action *) item.lParam;
-
-		if (action != NULL)
-		{
-			bSelected = action->GetStatus() == Selected;
-			g_log.Log(L"ApplicationsPropertyPageUI::_onNext. Action '%s', selected %u", action->GetName(), (wchar_t *)bSelected);
-
-			if (bSelected && action->IsDownloadNeed())
-				needInet = true;
-		}
-	}
-
-	if (needInet && Inet::IsThereConnection() == false)
-	{
-		_noInternetConnection();
+		_showNoInternetConnectionDialog();
 		return FALSE;
 	}
 	return TRUE;
 }
 
-void ApplicationsPropertyPageUI::_noInternetConnection()
+void ApplicationsPropertyPageUI::_showNoInternetConnectionDialog()
 {
 	wchar_t szMessage [MAX_LOADSTRING];
 	wchar_t szCaption [MAX_LOADSTRING];
@@ -480,7 +373,7 @@ void ApplicationsPropertyPageUI::_noInternetConnection()
 	LoadString(GetModuleHandle(NULL), IDS_NOINETACCESS, szMessage, MAX_LOADSTRING);
 	LoadString(GetModuleHandle(NULL), IDS_MSGBOX_CAPTION, szCaption, MAX_LOADSTRING);
 
-	MessageBox(getHandle(), szMessage, szCaption, MB_ICONWARNING | MB_OK);	
+	MessageBox(getHandle(), szMessage, szCaption, MB_ICONWARNING | MB_OK);
 }
 
 bool ApplicationsPropertyPageUI::_checkRunningApps()
@@ -491,6 +384,13 @@ bool ApplicationsPropertyPageUI::_checkRunningApps()
 
 		if (action->GetStatus() != Selected)
 			continue;
+
+		if (action->GetID() == AcrobatReader)
+		{
+			AdobeReaderAction* readerAction = (AdobeReaderAction*) action;
+			if (readerAction->IsIERunning() == true)
+				return true;
+		}
 		
 		if (action->IsExecuting())
 		{		

@@ -22,15 +22,27 @@
 
 #include "Serializer.h"
 #include "OSVersion.h"
+#include "Actions.h"
+#include "DownloadManager.h"
 
-class CatalanitzadorPerAWindows
+#include <string>
+using namespace std;
+
+class _APICALL CatalanitzadorPerAWindows
 {
 	
 public:
 		CatalanitzadorPerAWindows(HINSTANCE hInstance);
 		~CatalanitzadorPerAWindows();
 
-		void Run();
+		void Run(wstring commandLine);
+
+protected:
+
+		void _processCommandLine(wstring commandLine);
+		
+		bool m_bRunningCheck;
+		Actions m_actions;
 
 private:
 
@@ -39,9 +51,18 @@ private:
 		void _createWizard();
 		bool _isAlreadyRunning();
 		bool _hasAdminPermissionsDialog();
+		void _createCatalanitzadorUpdateAction(wstring version);
 
 		HINSTANCE m_hInstance;
 		HANDLE m_hEvent;
 		Serializer m_serializer;
 		OSVersion m_osVersion;
+		DownloadManager m_downloadManager;
+
+		int NORUNNING_PARAMETER_LEN;
+		int VERSION_PARAMETER_LEN;
+		int USEAEROLOOK_PARAMETER_LEN;
+		int USECLASSICLOOK_PARAMETER_LEN;
+		int NOCONFIGURATIONDOWNLOAD_PARAMETER_LEN;
+		int HELP_PARAMETER_LEN;
 };

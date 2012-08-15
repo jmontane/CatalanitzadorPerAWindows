@@ -20,8 +20,7 @@
 #include "stdafx.h"
 #include "Defines.h"
 #include "AdobeReaderAction.h"
-#include "RegistryMock.h"
-#include "RunnerMock.h"
+
 
 using ::testing::Return;
 using ::testing::_;
@@ -100,7 +99,7 @@ TEST(AdobeReaderActionTest, IsNeed_No_AlreadyApplied)
 	
 	adobeAction.CheckPrerequirements(NULL);
 	EXPECT_THAT(adobeAction.GetStatus(), AlreadyApplied);
-	EXPECT_THAT(adobeAction.IsNeed(), false);
+	EXPECT_FALSE(adobeAction.IsNeed());
 }
 
 TEST(AdobeReaderActionTest, IsNeed_No_NotInstalled)
@@ -112,7 +111,7 @@ TEST(AdobeReaderActionTest, IsNeed_No_NotInstalled)
 	
 	adobeAction.CheckPrerequirements(NULL);
 	EXPECT_THAT(adobeAction.GetStatus(), NotInstalled);
-	EXPECT_THAT(adobeAction.IsNeed(), false);
+	EXPECT_FALSE(adobeAction.IsNeed());
 }
 
 TEST(AdobeReaderActionTest, IsNeed_No_CannotBeApplied)
@@ -129,5 +128,5 @@ TEST(AdobeReaderActionTest, IsNeed_No_CannotBeApplied)
 	
 	adobeAction.CheckPrerequirements(NULL);
 	EXPECT_THAT(adobeAction.GetStatus(), CannotBeApplied);
-	EXPECT_THAT(adobeAction.IsNeed(), false);
+	EXPECT_FALSE(adobeAction.IsNeed());
 }

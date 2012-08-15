@@ -21,7 +21,6 @@
 
 #include "Action.h"
 #include "Runner.h"
-#include "OSVersion.h"
 #include "IRegistry.h"
 #include "IOSVersion.h"
 
@@ -38,7 +37,7 @@ public:
 		virtual wchar_t* GetName();
 		virtual wchar_t* GetDescription();
 		virtual ActionID GetID() const { return Firefox;}
-		virtual ActionGroup GetGroup() {return ActionGroupInternet;}
+		virtual ActionGroup GetGroup() const {return ActionGroupInternet;}
 		virtual bool IsDownloadNeed() {return false;}
 		virtual bool IsNeed();
 		virtual void Execute();
@@ -71,7 +70,6 @@ private:
 
 		IRegistry* m_registry;
 		vector <wstring> m_languages;
-		char szVersionAscii[128];
 		wstring m_locale;
 		wstring m_version;
 		bool m_CachedLanguageCode;

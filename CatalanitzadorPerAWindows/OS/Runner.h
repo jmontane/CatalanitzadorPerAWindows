@@ -26,16 +26,16 @@ class _APICALL Runner : IRunner
 public:
 		bool Execute(wchar_t* program, wchar_t* params, bool b64bits = false);
 		bool IsRunning() const;
-		void WaitUntilFinished();
+		void WaitUntilFinished() const;
 		vector <DWORD> GetProcessID(wstring name) const;
 		bool RequestQuitToProcessID(DWORD processID);
 		bool RequestCloseToProcessID(DWORD processID, bool bPost);
 		bool TerminateProcessID(DWORD processID);
 
+private:
 		static BOOL CALLBACK EnumWindowsProcClosePost(HWND hWnd, LPARAM lParam);
 		static BOOL CALLBACK EnumWindowsProcCloseSend(HWND hWnd, LPARAM lParam);
 		static BOOL CALLBACK EnumWindowsProcQuit(HWND hWnd, LPARAM lParam);
 
-private:
 		PROCESS_INFORMATION pi;
 };

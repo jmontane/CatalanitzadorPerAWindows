@@ -32,9 +32,12 @@
 #include "OpenOfficeAction.h"
 #include "AdobeReaderAction.h"
 #include "WindowsLiveAction.h"
+#include "FileVersionInfo.h"
+#include "CatalanitzadorUpdateAction.h"
 
-Actions::Actions()
+Actions::Actions(DownloadManager* downloadManager)
 {
+	m_pDownloadManager = downloadManager;
 	_buildListOfActions();
 }
 
@@ -85,21 +88,41 @@ IWin32I18N* Actions::_getNewWin32I18N()
 	return win32I18N;
 }
 
+IFileVersionInfo* Actions::_getFileVersionInfo()
+{
+	IFileVersionInfo* fileVersionInfo;
+	fileVersionInfo = (IFileVersionInfo *)new FileVersionInfo();
+	m_objectsToDelete.push_back(fileVersionInfo);
+	return fileVersionInfo;
+}
+
 void Actions::_buildListOfActions()
 {
 	m_actions.push_back(new WindowsLPIAction(_getNewOSVersion(), _getNewRegistry(), _getNewWin32I18N(), _getNewRunner()));
 	m_actions.push_back(new MSOfficeLPIAction( _getNewRegistry(), _getNewRunner()));
-	m_actions.push_back(new WindowsLiveAction( _getNewRegistry(), _getNewRunner()));
+	m_actions.push_back(new WindowsLiveAction( _getNewRegistry(), _getNewRunner(), _getFileVersionInfo()));
 	m_actions.push_back(new IELPIAction(_getNewOSVersion(), _getNewRegistry(), _getNewRunner()));
 	m_actions.push_back(new IEAcceptLanguagesAction( _getNewRegistry()));
 	m_actions.push_back(new ConfigureLocaleAction());
 	m_actions.push_back(new ConfigureDefaultLanguageAction(_getNewOSVersion(), _getNewRegistry(), _getNewRunner()));
 	m_actions.push_back(new ChromeAction( _getNewRegistry()));
 	m_actions.push_back(new FirefoxAction( _getNewRegistry()));
-	m_actions.push_back(new OpenOfficeAction( _getNewRegistry(), _getNewRunner()));
+	m_actions.push_back(new OpenOfficeAction( _getNewRegistry(), _getNewRunner(), m_pDownloadManager));
 	m_actions.push_back(new AdobeReaderAction( _getNewRegistry(), _getNewRunner()));
-	
+	m_actions.push_back(new CatalanitzadorUpdateAction(_getNewRunner(), m_pDownloadManager));
+
 	_checkPrerequirements();
+}
+
+Action * Actions::GetActionFromID(ActionID actionID)
+{
+	for (unsigned int i = 0; i < m_actions.size(); i++)
+	{		
+		if (m_actions.at(i)->GetID() == actionID)
+			return m_actions.at(i);
+	}
+	assert(false);
+	return NULL;
 }
 
 void Actions::_checkPrerequirements()

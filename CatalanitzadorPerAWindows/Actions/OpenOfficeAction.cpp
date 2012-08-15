@@ -22,9 +22,10 @@
 
 #include "OpenOfficeAction.h"
 #include "Url.h"
+#include "ApplicationVersion.h"
+#include "ConfigurationInstance.h"
 
-
-OpenOfficeAction::OpenOfficeAction(IRegistry* registry, IRunner* runner)
+OpenOfficeAction::OpenOfficeAction(IRegistry* registry, IRunner* runner, DownloadManager* downloadManager) : Action(downloadManager)
 {
 	m_registry = registry;	
 	m_runner = runner;
@@ -136,23 +137,17 @@ bool OpenOfficeAction::IsNeed()
 	return bNeed;
 }
 
-DownloadID OpenOfficeAction::_getDownloadID()
-{
-	if (m_version==L"3.3")
-		return DI_OPENOFFICE_33;
-
-	if (m_version==L"3.2")
-		return DI_OPENOFFICE_32;
-
-	return DI_UNKNOWN;
-}
 
 bool OpenOfficeAction::Download(ProgressStatus progress, void *data)
 {
+	wstring filename;	
+	ConfigurationFileActionDownload downloadVersion;
+
+	downloadVersion = ConfigurationInstance::Get().GetRemote().GetDownloadForActionID(GetID(), ApplicationVersion(GetVersion()));
 	GetTempPath(MAX_PATH, m_szFilename);
-	Url url(m_actionDownload.GetFileName(DI_OPENOFFICE_33));
-	wcscat_s(m_szFilename, url.GetFileName());	
-	return _getFile(_getDownloadID(), m_szFilename, progress, data);
+	wcscat_s(m_szFilename, downloadVersion.GetFilename().c_str());
+
+	return m_downloadManager->GetFile(downloadVersion, m_szFilename, progress, data);
 }
 
 void OpenOfficeAction::Execute()
@@ -405,7 +400,7 @@ void OpenOfficeAction::CheckPrerequirements(Action * action)
 
 	if (m_version.size() > 0)
 	{
-		if (_getDownloadID() == DI_UNKNOWN)
+		if (_doesDownloadExist() == false)
 		{			
 			_getStringFromResourceIDName(IDS_OPENOFFICEACTION_NOTSUPPORTEDVERSION, szCannotBeApplied);
 			g_log.Log(L"OpenOfficeAction::CheckPrerequirements. Version not supported");

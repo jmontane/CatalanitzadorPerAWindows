@@ -46,21 +46,14 @@ public:
 	PROPSHEETPAGE* 				_buildPageArray(void);		
 	virtual	void				_onInitDialog(){};	
 	virtual void 				cleanup(void);
- 	HWND						getHandle(){return m_hWnd;}	
-	bool						isAero() { return m_bIsAero;}
+ 	HWND						getHandle(){return m_hWnd;}
 	static int CALLBACK			PropSheetProcedure(HWND hWnd, UINT uMsg, LPARAM lParam);
 
 private:
-	
+
 	HWND						m_hWnd;
 	vector <PropertyPageUI *>	m_vecPages;
-	PROPSHEETHEADER				m_psh;	
-	PFNPROPSHEETCALLBACK		m_pCallback;
-	
-	bool						m_bApplyButton;
-	bool						m_bOkButton;	
-	PROPSHEETPAGE*				m_pages;	
-	bool						m_bIsAero;
-	
+	PROPSHEETHEADER				m_psh;
+	PROPSHEETPAGE*				m_pages;
 };
 

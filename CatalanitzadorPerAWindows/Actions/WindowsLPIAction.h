@@ -20,11 +20,10 @@
 #pragma once
 
 #include "Action.h"
-#include "Runner.h"
+#include "IRunner.h"
 #include "IRegistry.h"
 #include "IWin32I18N.h"
 #include "IOSVersion.h"
-#include "OSVersion.h"
 
 class _APICALL WindowsLPIAction : public Action
 {
@@ -35,7 +34,7 @@ public:
 		virtual wchar_t* GetName();
 		virtual wchar_t* GetDescription();
 		virtual ActionID GetID() const { return WindowsLPI;};
-		virtual ActionGroup GetGroup() {return ActionGroupWindows;}
+		virtual ActionGroup GetGroup() const {return ActionGroupWindows;}
 		virtual bool Download(ProgressStatus progress, void *data);
 		virtual bool IsNeed();
 		virtual bool IsRebootNeed() const;
@@ -56,6 +55,7 @@ private:
 		
 		bool _isWindowsXPValidated();
 		void _setDefaultLanguage();
+		bool _isASupportedSystemLanguage();
 
 		wchar_t m_szFilename[MAX_PATH];
 		IRunner* m_runner;

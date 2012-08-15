@@ -36,7 +36,7 @@ public:
 		virtual wchar_t* GetName();
 		virtual wchar_t* GetDescription();
 		virtual ActionID GetID() const { return IEAcceptLanguage;};
-		virtual ActionGroup GetGroup() {return ActionGroupInternet;}
+		virtual ActionGroup GetGroup() const {return ActionGroupInternet;}
 		virtual bool IsDownloadNeed() {return false;}
 		virtual bool IsNeed();
 		virtual void Execute();
@@ -58,8 +58,7 @@ private:
 		void _readLanguageCode(wstring& langcode);
 		bool _writeLanguageCode(wstring langcode);
 		void _createRegistryStringTwoLangs(wstring &regvalue, float average);	
-
-		char szVersionAscii[128];
+		
 		IRegistry* m_registry;
 		vector <wstring> m_languages;
 		wstring m_version;

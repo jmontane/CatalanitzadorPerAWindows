@@ -43,8 +43,8 @@ void InstallPropertyPageUI::_openURLInIE()
 	IWebBrowser2* wb = 0;
 	SendMessage(hX,AX_QUERYINTERFACE,(WPARAM)&IID_IWebBrowser2,(LPARAM)&wb);
 	if (wb)
-	{
-		m_slideshow->WaitForThread();
+	{		
+		m_slideshow->Wait();
 		wb->Navigate((BSTR)m_slideshow->GetURL().c_str(),0,0,0,0);
 		wb->Release();
 	}
@@ -69,12 +69,26 @@ void InstallPropertyPageUI::_onShowWindow()
 	}
 }
 
+const float BYTES_TO_MEGABYTES = 1024*1024;
+
+struct DownloadData
+{
+	InstallPropertyPageUI* pThis;
+	Action* action;
+};
+
 void InstallPropertyPageUI::_downloadStatus(int total, int current, void *data)
 {
-	InstallPropertyPageUI* pThis = (InstallPropertyPageUI*) data;
+	DownloadData* downloadData = (DownloadData *) data;	
+	wchar_t szString[MAX_LOADSTRING];
+	wchar_t szText[MAX_LOADSTRING];
 
-	SendMessage(pThis->hTaskProgressBar, PBM_SETRANGE32, 0, total);
-	SendMessage(pThis->hTaskProgressBar, PBM_SETPOS, current, 0);	
+	SendMessage(downloadData->pThis->hTaskProgressBar, PBM_SETRANGE32, 0, total);
+	SendMessage(downloadData->pThis->hTaskProgressBar, PBM_SETPOS, current, 0);
+
+	LoadString(GetModuleHandle(NULL), IDS_INSTALL_DOWNLOAD, szString, MAX_LOADSTRING);
+	swprintf_s(szText, szString, downloadData->action->GetName(), ((float)current) / BYTES_TO_MEGABYTES, ((float)total) / BYTES_TO_MEGABYTES);
+	SendMessage(downloadData->pThis->hDescription, WM_SETTEXT, 0, (LPARAM) szText);
 }
 
 void InstallPropertyPageUI::_execute(Action* action)
@@ -96,24 +110,22 @@ bool InstallPropertyPageUI::_download(Action* action)
 {
 	bool bDownload;
 	bool bError = false;
-	wchar_t szString [MAX_LOADSTRING];
-	wchar_t szText [MAX_LOADSTRING];
+	DownloadData downloadData;
 
 	if (action->IsDownloadNeed() == false)
 		return true;
 
 	_setTaskMarqueeMode(false);
 
-	LoadString(GetModuleHandle(NULL), IDS_INSTALL_DOWNLOAD, szString, MAX_LOADSTRING);
-	swprintf_s(szText, szString, action->GetName());
-	SendMessage(hDescription, WM_SETTEXT, 0, (LPARAM) szText);
 
 	Window::ProcessMessages();
 
 	bDownload = true;
 	while (bDownload)
 	{
-		if (action->Download((ProgressStatus)_downloadStatus, this) == false)
+		downloadData.pThis = this;
+		downloadData.action = action;
+		if (action->Download((ProgressStatus)_downloadStatus, &downloadData) == false)
 		{
 			DownloadErrorDlgUI dlgError(action->GetName());
 			if (dlgError.Run(getHandle()) != IDOK)
@@ -203,12 +215,14 @@ void InstallPropertyPageUI::_waitExecutionComplete(Action* action)
 	}
 }
 
+#define SYSTEM_RESTORE_NAME L"Catalanitzador per al Windows"
+
 DWORD InstallPropertyPageUI::_systemRestoreThread(LPVOID lpParam)
 {
 	SystemRestore* systemRestore = (SystemRestore *) lpParam;
 	
 	systemRestore->Init();
-	systemRestore->Start(L"Catalanitzador per a Windows");
+	systemRestore->Start(SYSTEM_RESTORE_NAME);
 	return 0;
 }
 

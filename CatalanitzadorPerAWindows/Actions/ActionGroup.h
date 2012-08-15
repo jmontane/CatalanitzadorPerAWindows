@@ -21,7 +21,7 @@
 
 enum _APICALL ActionGroup
 {
-	ActionGroupNone,
+	ActionGroupNone, // Used for actions not shown to the user
 	ActionGroupWindows,
 	ActionGroupInternet,
 	ActionGroupOfficeAutomation,

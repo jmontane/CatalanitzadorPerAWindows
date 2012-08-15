@@ -82,12 +82,13 @@ void FinishPropertyPageUI::_onCommand(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		ShellExecute(NULL, L"open", szURL, NULL, NULL, SW_SHOWNORMAL);
 	}
 }
+
 void FinishPropertyPageUI::_saveToDisk()
 {
 	wchar_t szXML[MAX_PATH];
 
 	GetTempPath(MAX_PATH, szXML);	
-	wcscat_s(szXML, L"results.xml");
+	wcscat_s(szXML, L"statistics.xml");
 	m_xmlFile = szXML;
 	m_serializer->SaveToFile(m_xmlFile);
 }
@@ -97,7 +98,7 @@ void FinishPropertyPageUI::_onInitDialog()
 	if (*m_pbSendStats)
 	{
 		m_uploadStatistics = new UploadStatistics(m_serializer);
-		m_uploadStatistics->StartUploadThread();
+		m_uploadStatistics->Start();
 	}
 
 	m_levelProgressBar = GetDlgItem(getHandle(), IDC_LEVEL_PROGRESSBAR);
@@ -189,7 +190,7 @@ void FinishPropertyPageUI::_onFinish()
 		}
 	}	
 	if (m_uploadStatistics!= NULL)
-		m_uploadStatistics->WaitBeforeExit();
+		m_uploadStatistics->Wait();
 }
 
 void FinishPropertyPageUI::_shutdown()
@@ -198,3 +199,13 @@ void FinishPropertyPageUI::_shutdown()
 	ExitWindowsEx(EWX_REBOOT | EWX_FORCE, 0);
 }
 
+#define CONTACT_EMAIL L"mailto://catalanitzador@softcatala.org"
+
+NotificationResult FinishPropertyPageUI::_onNotify(LPNMHDR hdr, int /*iCtrlID*/)
+{
+	if (hdr->code == NM_CLICK && hdr->idFrom == IDC_SYSLINK_SUGGESTIONS)
+	{		
+		ShellExecute(NULL, L"open", CONTACT_EMAIL, NULL, NULL, SW_SHOWNORMAL);	
+	}
+	return ReturnFalse;
+}

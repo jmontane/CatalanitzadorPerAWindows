@@ -76,7 +76,7 @@ LPCWSTR IELPIAction::GetLicenseID()
 	return NULL;
 }
 
-IEVersion IELPIAction::_getIEVersion()
+IELPIAction::IEVersion IELPIAction::_getIEVersion()
 {
 	if (m_version == IEUnread)
 	{
@@ -85,7 +85,7 @@ IEVersion IELPIAction::_getIEVersion()
 	return m_version;
 }
 
-IEVersion IELPIAction::_readIEVersion()
+IELPIAction::IEVersion IELPIAction::_readIEVersion()
 {
 	IEVersion version;	
 	wchar_t szVersion[255] = L"";
@@ -209,7 +209,8 @@ bool IELPIAction::_isLangPackInstalled()
 	GetSystemDirectory(szFile, MAX_PATH);
 	wcscat_s(szFile, L"\\ca-es\\ieframe.dll.mui");
 
-	FileVersionInfo fileVersion(szFile);
+	FileVersionInfo fileVersion;
+	fileVersion.SetFilename(szFile);
 	installed = _getIEVersion() == fileVersion.GetMajorVersion() && fileVersion.GetLanguageCode() == CATALAN_LANGCODE;
 
 	g_log.Log(L"IELPIAction::_isLangPackInstalled returns %u", (wchar_t*) installed);
@@ -218,31 +219,21 @@ bool IELPIAction::_isLangPackInstalled()
 
 bool IELPIAction::IsNeed()
 {
-	if (status == CannotBeApplied)
-		return false;
-	
-	bool bNeed = false;
+	bool bNeed;
 
-	if (_getDownloadID() != DI_UNKNOWN)
-	{
-		if (_isLangPackInstalled() == false)
-		{		
+	switch(GetStatus())
+	{		
+		case NotInstalled:
+		case AlreadyApplied:
+		case CannotBeApplied:
+			bNeed = false;
+			break;
+		default:
 			bNeed = true;
-		}
-		else
-		{
-			status = AlreadyApplied;
-		}		
+			break;
 	}
-	else
-	{
-		status = CannotBeApplied;
-		_getStringFromResourceIDName(IDS_WINDOWSLPIACTION_UNSUPPORTEDVERSION, szCannotBeApplied);
-		g_log.Log(L"IELPIAction::IsNeed. Unsupported Windows version");
-	}
-
-	g_log.Log(L"IELPIAction::IsNeed returns %u", (wchar_t *) bNeed);
-	return bNeed;	
+	g_log.Log(L"IELPIAction::IsNeed returns %u (status %u)", (wchar_t *) bNeed, (wchar_t*) GetStatus());
+	return bNeed;
 }
 
 // We need to copy the file into a subdirectory with in the temp file since the IE installer 
@@ -313,7 +304,7 @@ void IELPIAction::Execute()
 		break;
 	}
 
-	status = InProgress;
+	SetStatus(InProgress);
 	g_log.Log(L"IELPIAction::Execute '%s', 64 bits %u", szParams,  (wchar_t *)_is64BitsPackage());
 	m_runner->Execute(NULL, szParams, _is64BitsPackage());
 }
@@ -325,13 +316,15 @@ ActionStatus IELPIAction::GetStatus()
 		if (m_runner->IsRunning())
 			return InProgress;
 
-		if (_wasInstalled()) {
-			status = Successful;
+		if (_wasInstalled()) 
+		{
+			SetStatus(Successful);
 		}
-		else {
-			status = FinishedWithError;			
+		else 
+		{
+			SetStatus(FinishedWithError);
 		}
-		
+
 		g_log.Log(L"IELPIAction::GetStatus is '%s'", status == Successful ? L"Successful" : L"FinishedWithError");
 	}
 	return status;
@@ -348,7 +341,7 @@ bool IELPIAction::_wasInstalled()
 	return _isLangPackInstalled();
 }
 
-Prerequirements IELPIAction::CheckPrerequirementsDependand(Action * action)
+IELPIAction::Prerequirements IELPIAction::_checkPrerequirementsDependand(Action * action)
 {
 	bool WindowsLPISelected;
 	WindowsLPISelected = action->GetStatus() == Selected || action->GetStatus() == AlreadyApplied;
@@ -361,7 +354,7 @@ Prerequirements IELPIAction::CheckPrerequirementsDependand(Action * action)
 				case IE6:
 					return AppliedInWinLPI;
 				case IE7:
-				case IE8:				
+				case IE8:
 					if (WindowsLPISelected == false)
 					{
 						return NeedsWinLPI;
@@ -375,11 +368,11 @@ Prerequirements IELPIAction::CheckPrerequirementsDependand(Action * action)
 			switch (_getIEVersion())
 			{
 				case IE7:
-					return AppliedInWinLPI;					
+					return AppliedInWinLPI;
 				case IE8:
-				case IE9:				
+				case IE9:
 					if (WindowsLPISelected == false)
-					{						
+					{
 						return NeedsWinLPI;
 					}
 					break;
@@ -391,10 +384,10 @@ Prerequirements IELPIAction::CheckPrerequirementsDependand(Action * action)
 			switch (_getIEVersion())
 			{
 				case IE8:
-					return AppliedInWinLPI;					
+					return AppliedInWinLPI;
 				case IE9:				
 					if (WindowsLPISelected == false)
-					{						
+					{
 						return NeedsWinLPI;
 					}
 					break;
@@ -403,13 +396,13 @@ Prerequirements IELPIAction::CheckPrerequirementsDependand(Action * action)
 			}
 			break;
 		default: //	Windows2008, Windows2008R2 and others
-			return NoLangPackAvailable;			
+			return NoLangPackAvailable;
 	}
 
 	return PrerequirementsOk;
 }
 
-Prerequirements IELPIAction::CheckPrerequirements()
+IELPIAction::Prerequirements IELPIAction::_checkPrerequirements()
 {
 	if (_getIEVersion() == IEUnknown)
 		return UnknownIEVersion;
@@ -424,12 +417,9 @@ void IELPIAction::CheckPrerequirements(Action * action)
 {
 	szCannotBeApplied[0] = NULL;
 
-	if (GetStatus() == AlreadyApplied)
-		return;
-
 	Prerequirements pre;
 
-	pre = CheckPrerequirements();
+	pre = _checkPrerequirements();
 
 	if (pre != PrerequirementsOk)	
 	{
@@ -444,7 +434,7 @@ void IELPIAction::CheckPrerequirements(Action * action)
 	}
 	else if (action != NULL)
 	{
-		switch (CheckPrerequirementsDependand(action))
+		switch (_checkPrerequirementsDependand(action))
 		{
 			case AppliedInWinLPI:
 				_getStringFromResourceIDName(IDS_IELPIACTION_APPLIEDINWINLPI, szCannotBeApplied);

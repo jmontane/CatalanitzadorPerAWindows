@@ -21,41 +21,20 @@
 
 #include "Action.h"
 #include "Runner.h"
-#include "OSVersion.h"
 #include "IRegistry.h"
 #include "IOSVersion.h"
 
-
-enum IEVersion
-{
-	IEUnread = -1,
-	IEUnknown = 0,
-	IE6 = 6,
-	IE7 = 7,
-	IE8 = 8,
-	IE9 = 9,
-};
-
-enum Prerequirements
-{
-	PrerequirementsOk,
-	AppliedInWinLPI,
-	NeedsWinLPI,
-	NoLangPackAvailable,
-	UnknownIEVersion,
-};
-
-
 class _APICALL IELPIAction : public Action
 {
-public:
+public:	
+
 		IELPIAction(IOSVersion* OSVersion, IRegistry* registry, IRunner* runner);
 		~IELPIAction();
 
 		virtual wchar_t* GetName();
 		virtual wchar_t* GetDescription();
 		virtual ActionID GetID() const { return IELPI;};
-		virtual ActionGroup GetGroup() {return ActionGroupInternet;}
+		virtual ActionGroup GetGroup() const {return ActionGroupInternet;}
 		virtual bool Download(ProgressStatus progress, void *data);
 		virtual bool IsNeed();		
 		virtual void Execute();
@@ -64,19 +43,36 @@ public:
 		virtual ActionID DependsOn() const { return WindowsLPI;};
 		virtual LPCWSTR GetLicenseID();
 
-		Prerequirements CheckPrerequirementsDependand(Action * action);
-		Prerequirements CheckPrerequirements();
+		enum Prerequirements
+		{
+			PrerequirementsOk,
+			AppliedInWinLPI,
+			NeedsWinLPI,
+			NoLangPackAvailable,
+			UnknownIEVersion,
+		};
+
+		enum IEVersion
+		{
+			IEUnread = -1,
+			IEUnknown = 0,
+			IE6 = 6,
+			IE7 = 7,
+			IE8 = 8,
+			IE9 = 9,
+		};
 
 protected:
 
 		IEVersion _readIEVersion();
 		IEVersion _getIEVersion();
 		void _setIEVersion(IEVersion version) {m_version = version;}
+		Prerequirements _checkPrerequirementsDependand(Action * action);
+		Prerequirements _checkPrerequirements();
 
 private:
 
 		DownloadID _getDownloadID();
-		DownloadID _getDownloadIDIE7();
 		DownloadID _getDownloadIDIE8();
 		DownloadID _getDownloadIDIE9();
 		bool _isLangPackInstalled();

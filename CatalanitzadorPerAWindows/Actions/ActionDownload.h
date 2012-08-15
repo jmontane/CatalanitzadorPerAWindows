@@ -23,8 +23,6 @@
 
 #include <windows.h>
 #include "DownloadInet.h"
-#include "Serializable.h"
-#include "ActionStatus.h"
 #include "ActionID.h"
 #include "Sha1Sum.h"
 #include "ActionDownloadData.h"
@@ -32,7 +30,7 @@
 #include <vector>
 using namespace std;
 
-#define SHA1_EXTESION L".sha1"
+#define SHA1_EXTENSION L".sha1"
 
 
 class Download

@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=";$(SolutionDir)\libs\gtest\include\;$(SolutionDir)\libs\gmock\include;$(SolutionDir)CatalanitzadorPerAWindows\Core;$(SolutionDir)CatalanitzadorPerAWindows\OS;$(SolutionDir)CatalanitzadorPerAWindows\Actions;$(SolutionDir)CatalanitzadorPerAWindows\Resources;$(SolutionDir)CatalanitzadorPerAWindows\Application;$(SolutionDir)CatalanitzadorPerAWindows.UnitTests\Actions;$(SolutionDir)CatalanitzadorPerAWindows.UnitTests\Mocks;$(SolutionDir)CatalanitzadorPerAWindows.UnitTests\Support;;$(SolutionDir)CatalanitzadorPerAWindows\UI"
+				AdditionalIncludeDirectories=";$(SolutionDir)\libs\gtest\include\;$(SolutionDir)\libs\gmock\include;$(SolutionDir)CatalanitzadorPerAWindows\Core;$(SolutionDir)CatalanitzadorPerAWindows\OS;$(SolutionDir)CatalanitzadorPerAWindows\Actions;$(SolutionDir)CatalanitzadorPerAWindows\Resources;$(SolutionDir)CatalanitzadorPerAWindows\Application;$(SolutionDir)CatalanitzadorPerAWindows.UnitTests\Actions;$(SolutionDir)CatalanitzadorPerAWindows.UnitTests\Mocks;$(SolutionDir)CatalanitzadorPerAWindows.UnitTests\Support;$(SolutionDir)CatalanitzadorPerAWindows\UI;;$(SolutionDir)CatalanitzadorPerAWindows\Core\Configuration"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -272,6 +272,10 @@
 			Name="Mocks"
 			>
 			<File
+				RelativePath=".\Mocks\FileVersionInfoMock.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Mocks\OSVersionMock.h"
 				>
 			</File>
@@ -324,6 +328,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Actions\WindowsLiveActionTest.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Actions\WindowsLPIActionTest.cpp"
 				>
 			</File>
@@ -332,11 +340,19 @@
 			Name="Core"
 			>
 			<File
+				RelativePath=".\Core\ApplicationVersionTest.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Core\GuidTest.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\Core\HttpFormInetTest.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Core\SerializerTest.cpp"
 				>
 			</File>
 			<File
@@ -351,6 +367,26 @@
 				RelativePath=".\Core\UrlTest.cpp"
 				>
 			</File>
+			<Filter
+				Name="Configuration"
+				>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationFileActionDownloadsTest.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationFileActionDownloadTest.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationRemoteXmlParserTest.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Core\Configuration\ConfigurationTest.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="OS"
@@ -361,6 +397,10 @@
 			</File>
 			<File
 				RelativePath=".\OS\Sha1SumTest.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\OS\ThreadTest.cpp"
 				>
 			</File>
 			<File
@@ -377,6 +417,14 @@
 			</File>
 			<File
 				RelativePath=".\Support\TempFile.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Application"
+			>
+			<File
+				RelativePath=".\Application\CatalanitzadorPerAWindowsTest.cpp"
 				>
 			</File>
 		</Filter>

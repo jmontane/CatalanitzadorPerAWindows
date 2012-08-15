@@ -19,19 +19,19 @@
  
 #pragma once
 
-#include <string>
-#include <windows.h>
+#include "IFileVersionInfo.h"
 
 using namespace std;
 
-class _APICALL FileVersionInfo
+class _APICALL FileVersionInfo : IFileVersionInfo
 {
-public:
-		FileVersionInfo(wstring file);
+public:	
+		FileVersionInfo();
 
-		wstring& GetVersion();
-		int GetMajorVersion();
-		DWORD GetLanguageCode();
+		virtual void SetFilename(wstring file) { m_file = file; };
+		virtual wstring& GetVersion();
+		virtual int GetMajorVersion();
+		virtual DWORD GetLanguageCode();
 
 protected:
 

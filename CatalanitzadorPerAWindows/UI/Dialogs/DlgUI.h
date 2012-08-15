@@ -23,17 +23,17 @@ class DlgUI
 {
 public:
 		int Run(HWND hWnd);
-		virtual LPCTSTR GetResourceTemplate() = 0;
+		virtual LPCTSTR GetResourceTemplate() = 0;		
 
 protected:
 
 		virtual	void _onInitDialog(){};
 		virtual void _onCommand(WPARAM wParam, LPARAM lParam){};
 		virtual int _onNotify(LPNMHDR /*hdr*/, int /*iCtrlID*/){ return 0;}
-
-		HWND m_hWnd;
+		virtual	void _onTimer() {};
+		HWND getHandle() { return  m_hWnd;}
 
 private:
-		
+		HWND m_hWnd;
 		static LRESULT CALLBACK DlgProc(HWND hWndDlg, UINT Msg, WPARAM wParam, LPARAM lParam);		
 };

@@ -18,11 +18,10 @@
  */
 
 #include "stdafx.h"
-#include <windows.h>
 
 #include "PropertySheetUI.h"
 #include "PropertyPageUI.h"
-#include "OSVersion.h"
+#include "ConfigurationInstance.h"
 
 #define ID_APPLY_NOW	0x3021
 #define ID_APPLY		0x3021
@@ -30,13 +29,6 @@
 PropertySheetUI::PropertySheetUI()
 {
 	m_pages = NULL;
-
-	OSVersion osversion;
-	m_bIsAero = osversion.GetVersion() != WindowsXP;
-
-#ifdef FORCE_NON_AERO
-	m_bIsAero = false;
-#endif
 }
 
 PROPSHEETPAGE* PropertySheetUI::_buildPageArray()
@@ -84,7 +76,7 @@ int PropertySheetUI::runModal(HINSTANCE hInstance, HWND hParent, LPWSTR pCaption
 	m_psh.dwSize = sizeof(PROPSHEETHEADER);
 	m_psh.dwFlags = PSH_PROPSHEETPAGE | PSH_WIZARD;
 
-	if (isAero())
+	if (ConfigurationInstance::Get().GetAeroEnabled())
 		m_psh.dwFlags |= PSH_AEROWIZARD;
 
 	m_psh.hwndParent = hParent;
